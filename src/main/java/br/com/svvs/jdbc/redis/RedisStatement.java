@@ -80,7 +80,7 @@ public class RedisStatement extends RedisAbstractStatement implements Statement 
 
     @Override
     public ResultSet executeQuery(String sql) throws SQLException {
-        this.execute(sql);
+        this.execute(sql, RedisCommand.REDISQL_QUERY);
         return this.getResultSet();
     }
 
@@ -88,7 +88,13 @@ public class RedisStatement extends RedisAbstractStatement implements Statement 
     public int executeUpdate(String sql) throws SQLException {
 
         try {
-            ResultSet resultSet = RedisCommandProcessor.runCommand(connection, sql);
+            RedisCommand command = RedisCommand.REDISQL_EXEC;
+            sql = sql.trim();
+            if (sql.toUpperCase().startsWith("CREATE DATABASE ")) {
+              sql = sql.substring("CREATE DATABASE ".length());
+              command = RedisCommand.REDISQL_CREATE_DB;
+            }
+            ResultSet resultSet = RedisCommandProcessor.runCommand(connection, sql, command);
 
             if(resultSet != null && resultSet.next()) {
                 return resultSet.getInt(0);

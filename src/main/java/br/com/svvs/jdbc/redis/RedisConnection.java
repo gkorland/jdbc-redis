@@ -28,13 +28,15 @@ public class RedisConnection implements java.sql.Connection {
     private RedisIO io = null;
     private boolean isClosed = true;
     private boolean autoCommit = true;
+    private String db;
 
-    public RedisConnection(final RedisIO io, final Properties info) throws SQLException {
+    public RedisConnection(final RedisIO io, final Properties info,  final String db) throws SQLException {
 
         if (io == null) {
             throw new RuntimeException("Null RedisIO handler.");
         }
         this.io = io;
+        this.db = db;
 
         // we got a connection, let's try to authenticate
         if(info != null && info.getProperty(PROPERTY_PASSWORD) != null &&
@@ -142,7 +144,7 @@ public class RedisConnection implements java.sql.Connection {
     @Override
     public String getCatalog() throws SQLException {
         checkConnection(); // as API spec says throw exception if conn is closed.
-        return null;
+        return this.db;
     }
 
     @Override
@@ -276,7 +278,7 @@ public class RedisConnection implements java.sql.Connection {
 
     @Override
     public void setCatalog(final String catalog) throws SQLException {
-        throw new SQLFeatureNotSupportedException("setCatalog");
+        this.db = catalog;
     }
 
     @Override
@@ -351,8 +353,8 @@ public class RedisConnection implements java.sql.Connection {
     public <T> T unwrap(Class<T> arg0) throws SQLException {
         throw new SQLFeatureNotSupportedException("unwrap");
     }
-
-    protected Object msgToServer(String redisMsg) throws SQLException {
+    
+    protected Object msgToServer(String... redisMsg) throws SQLException {
 
         checkConnection(); // check if we can send the message.
 

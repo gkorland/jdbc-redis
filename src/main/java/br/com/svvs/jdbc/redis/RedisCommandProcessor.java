@@ -11,9 +11,19 @@ public final class RedisCommandProcessor {
     public static ResultSet runCommand(final RedisConnection connection, final String statement)
             throws SQLException, RedisParseException, RedisResultException {
 
-        RedisCommand command = extractCommand(statement);
-        Object response = connection.msgToServer(statement + "\r\n");
-        return command.getResponse().processResponse(connection, statement, response);
+        return runCommand(connection, statement, extractCommand(statement));
+    }
+    
+    public static ResultSet runCommand(final RedisConnection connection, final String statement, final RedisCommand command)
+        throws SQLException, RedisParseException, RedisResultException {
+
+      Object response; 
+      if(connection.getCatalog() == null) {
+        response = connection.msgToServer(command.command(), "\"" + statement + "\"");
+      } else {
+        response = connection.msgToServer(command.command(), connection.getCatalog(), "\"" + statement + "\"");
+      }
+      return command.getResponse().processResponse(connection, statement, response);
     }
 
 

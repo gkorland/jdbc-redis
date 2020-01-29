@@ -28,9 +28,9 @@ public class RedisResultSet implements ResultSet {
 
     private boolean isClosed;
     protected int position = -1;
-    protected String[] result;
+    protected Object[] result;
 
-    public RedisResultSet(final String[] result) {
+    public RedisResultSet(final Object[] result) {
         this.result = result;
     }
 
@@ -378,6 +378,10 @@ public class RedisResultSet implements ResultSet {
             return 0;
         }
 
+        if(value.equals("OK")) {
+          return 1;
+        }
+
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
@@ -440,7 +444,7 @@ public class RedisResultSet implements ResultSet {
     @Override
     public String getNString(final int columnIndex) throws SQLException {
         checkIfClosed();
-        return result[position];
+        return result[position] instanceof Object[] ? ((Object[])result[position])[columnIndex].toString() : result[position].toString();
     }
 
     @Override
@@ -541,7 +545,7 @@ public class RedisResultSet implements ResultSet {
             throw new SQLException("columnIndex is not valid");
         }
 
-        return result[position];
+        return getNString(columnIndex);
     }
 
     @Override
@@ -601,7 +605,7 @@ public class RedisResultSet implements ResultSet {
     public URL getURL(final int columnIndex) throws SQLException {
         checkIfClosed();
         try {
-            return new URL(result[position]);
+            return new URL(getNString(columnIndex));
         } catch (MalformedURLException e) {
             throw new SQLException(e);
         }

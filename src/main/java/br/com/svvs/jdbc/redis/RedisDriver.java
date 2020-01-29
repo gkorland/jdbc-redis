@@ -17,7 +17,7 @@ public class RedisDriver implements Driver {
 
     private static final String DEFAULT_HOST = "localhost";
     private static final int DEFAULT_PORT = 6379;
-    private static final int DEFAULT_DBNB = 0;
+    private static final String DEFAULT_DB = "0";
 
     private static final int MAJOR_VERSION = 0;
     private static final int MINOR_VERSION = 1;
@@ -45,7 +45,7 @@ public class RedisDriver implements Driver {
             String rawUrl = url.replaceFirst("jdbc:","");
             String host = DEFAULT_HOST;
             int port = DEFAULT_PORT;
-            int dbnb = DEFAULT_DBNB;
+            String db = null;
             try {
 
                 URI uri = new URI(rawUrl);
@@ -53,10 +53,8 @@ public class RedisDriver implements Driver {
                 host = uri.getHost() != null ? uri.getHost() : DEFAULT_HOST;
                 port = uri.getPort() != -1 ? uri.getPort() : DEFAULT_PORT;
 
-                dbnb = DEFAULT_PORT;
-
                 if (uri.getPath() != null && uri.getPath().length() > 1) {
-                    dbnb = Integer.parseInt(uri.getPath().substring(1));
+                  db = uri.getPath().substring(1);
                 }
 
             } catch (URISyntaxException |
@@ -64,7 +62,7 @@ public class RedisDriver implements Driver {
                 throw new SQLException("Could not parse JDBC URL: " + url, e);
             }
 
-            return RedisConnectionFactory.getConnection(host, port, dbnb, info);
+            return RedisConnectionFactory.getConnection(host, port, db, info);
 
         }
     }

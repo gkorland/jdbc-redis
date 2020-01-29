@@ -15,8 +15,7 @@ public class RedisArrayResponse implements RedisResponse {
 
     @Override
     public ResultSet processResponse(final RedisConnection connection, final String command, final Object response) {
-        Object[] list = (Object[])response;
-        return new RedisResultSet(Arrays.copyOf(list, list.length, String[].class));
+        return new RedisResultSet((Object[])response);
     }
 
 }

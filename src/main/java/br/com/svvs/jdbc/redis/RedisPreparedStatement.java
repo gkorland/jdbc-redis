@@ -48,34 +48,37 @@ public class RedisPreparedStatement extends RedisAbstractStatement implements Pr
 
     @Override
     public boolean execute() throws SQLException {
+        return this.execute(RedisCommand.REDISQL_EXEC);
+    }
+    
+    private boolean execute(final RedisCommand command) throws SQLException {
+      if(this.isClosed)
+        throw new SQLException("This statement is closed.");
 
-        if(this.isClosed)
-            throw new SQLException("This statement is closed.");
-
-        // let's try to interpolate all place holders.
-        int idx = 1;
-        while(this.sql.indexOf("?") > 1) {
-            try {
-                final String parameter = this.parameters.get(Integer.valueOf(idx));
-                this.sql = this.sql.replaceFirst("\\Q\u003F\\E", parameter==null ? "null" : quoteReplacement(parameter));
-            } catch(IndexOutOfBoundsException e) {
-                throw new SQLException("Can't find defined parameter for position: " + idx);
-            }
-            idx++;
-        }
-
-        return super.execute(this.sql);
+      // let's try to interpolate all place holders.
+      int idx = 1;
+      while(this.sql.indexOf("?") > 1) {
+          try {
+              final String parameter = this.parameters.get(Integer.valueOf(idx));
+              this.sql = this.sql.replaceFirst("\\Q\u003F\\E", parameter==null ? "null" : quoteReplacement(parameter));
+          } catch(IndexOutOfBoundsException e) {
+              throw new SQLException("Can't find defined parameter for position: " + idx);
+          }
+          idx++;
+      }
+  
+      return super.execute(this.sql, command);
     }
 
     @Override
     public ResultSet executeQuery() throws SQLException {
-        this.execute();
+        this.execute(RedisCommand.REDISQL_EXEC);
         return this.resultSet;
     }
 
     @Override
     public int executeUpdate() throws SQLException {
-        this.execute();
+        this.execute(RedisCommand.REDISQL_EXEC);
         return 0;
     }
 
@@ -374,7 +377,7 @@ public class RedisPreparedStatement extends RedisAbstractStatement implements Pr
     @Override
     public boolean execute(String sql) throws SQLException {
         this.sql = sql;
-        return this.execute();
+        return this.execute(RedisCommand.REDISQL_EXEC);
     }
 
     @Override
@@ -401,7 +404,7 @@ public class RedisPreparedStatement extends RedisAbstractStatement implements Pr
 
     @Override
     public ResultSet executeQuery(String sql) throws SQLException {
-        this.execute(sql);
+        this.execute(sql, RedisCommand.REDISQL_QUERY);
         return this.resultSet;
     }
 

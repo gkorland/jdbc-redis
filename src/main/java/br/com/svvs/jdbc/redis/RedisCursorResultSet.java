@@ -47,6 +47,6 @@ public class RedisCursorResultSet extends RedisResultSet {
     }
 
     public String[] getResult() {
-        return result;
+        return (String[])result;
     }
 }

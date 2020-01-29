@@ -20,8 +20,14 @@ public class RedisSocketIO implements RedisIO {
 		this.inputStream = new RedisInputStream(socket.getInputStream());
 	}
 
-	public Object sendRaw(String command) throws IOException, RedisResultException {
-		this.outputStreamWriter.write(command.toCharArray());
+	public Object sendRaw(String... command) throws IOException, RedisResultException {
+	    for(String part : command) {
+	      this.outputStreamWriter.write(part.toCharArray());
+	      this.outputStreamWriter.write(' ');
+	    }		
+	    //TODO store as constant 
+	    this.outputStreamWriter.write("\r\n".toCharArray());
+	    
 		this.outputStreamWriter.flush();
 		return RESPDecoder.decode(inputStream);
 	}

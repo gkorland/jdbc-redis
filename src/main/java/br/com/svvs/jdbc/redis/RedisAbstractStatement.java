@@ -24,7 +24,7 @@ public abstract class RedisAbstractStatement {
             throw new SQLException("This statement is closed.");
 
         try {
-            resultSet = RedisCommandProcessor.runCommand(connection, sql);
+            resultSet = RedisCommandProcessor.runCommand(connection, sql, RedisCommand.REDISQL_EXEC);
 
             return true;
 
@@ -32,6 +32,22 @@ public abstract class RedisAbstractStatement {
                  RedisResultException e) {
             throw new SQLException(e);
         }
+    }
+    
+    public boolean execute(String sql, final RedisCommand command) throws SQLException {
+
+      if(isClosed)
+        throw new SQLException("This statement is closed.");
+
+      try {
+        resultSet = RedisCommandProcessor.runCommand(connection, sql, command);
+
+        return true;
+
+      } catch (RedisParseException |
+          RedisResultException e) {
+        throw new SQLException(e);
+      }
     }
 
 }
